@@ -18,7 +18,11 @@ jobs:
       # The repository initially contains Dart sources only. Generate the native
       # Android host project before resolving plugins and building the APK.
       - name: Generate Android platform files
-        run: flutter create --platforms=android --org com.alalmytmhlat --project-name hisabati .
+        run: |
+          flutter create --platforms=android --org com.alalmytmhlat --project-name hisabati .
+          # flutter create adds a template test that references the default MyApp class.
+          # This project has its own tests and a different root widget.
+          rm -f test/widget_test.dart
       - run: flutter pub get
       - run: dart format lib test
       - run: flutter analyze
