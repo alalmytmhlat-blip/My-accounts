@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../data/expense_repository.dart';
 import '../state/app_state.dart';
 
 class ExpensesScreen extends StatefulWidget {
@@ -88,7 +87,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 onTap: () async {
                   final picked = await showDatePicker(context: dialogContext, initialDate: selectedDate,
                     firstDate: DateTime(2000), lastDate: DateTime(2100));
-                  if (picked != null) setDialogState(() => selectedDate = picked);
+                  if (picked != null) { setDialogState(() => selectedDate = picked); }
                 },
               ),
             ],
@@ -103,7 +102,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             }, child: const Text('حفظ المصروف')),
           ],
         )));
-      if (!mounted || result == null) return;
+      if (!mounted || result == null) { return; }
       await state.addExpense(title: result.$1, category: result.$2, amountMinor: result.$3,
         date: DateFormat('yyyy-MM-dd').format(result.$4));
       if (mounted) {
