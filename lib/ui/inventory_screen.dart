@@ -127,16 +127,16 @@ class _InventoryScreenState extends State<InventoryScreen> {
         )))),
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('إلغاء')),
-          FilledButton(onPressed: () { if (formKey.currentState!.validate()) Navigator.pop(dialogContext, true); }, child: const Text('حفظ الصنف')),
+          FilledButton(onPressed: () { if (formKey.currentState!.validate()) { Navigator.pop(dialogContext, true); } }, child: const Text('حفظ الصنف')),
         ],
       ));
-      if (!mounted || saved != true) return;
+      if (!mounted || saved != true) { return; }
       await state.addProduct(name: name.text, code: code.text, category: category.text, unit: unit.text,
         quantity: number(quantity.text)!, minimumQuantity: number(minimum.text)!,
         purchasePriceMinor: minor(purchase.text)!, salePriceMinor: minor(sale.text)!);
-      if (mounted) messenger.showSnackBar(const SnackBar(content: Text('تم حفظ الصنف والمخزون')));
+      if (mounted) { messenger.showSnackBar(const SnackBar(content: Text('تم حفظ الصنف والمخزون'))); }
     } catch (_) {
-      if (mounted) messenger.showSnackBar(const SnackBar(content: Text('تعذر حفظ الصنف')));
+      if (mounted) { messenger.showSnackBar(const SnackBar(content: Text('تعذر حفظ الصنف'))); }
     } finally {
       name.dispose(); code.dispose(); category.dispose(); unit.dispose(); quantity.dispose();
       minimum.dispose(); purchase.dispose(); sale.dispose();
@@ -172,14 +172,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
             TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('إلغاء')),
             FilledButton(onPressed: () {
               final value = double.tryParse(amount.text.trim());
-              if (value != null && value > 0) Navigator.pop(dialogContext, (movement, value, note.text));
+              if (value != null && value > 0) { Navigator.pop(dialogContext, (movement, value, note.text)); }
             }, child: const Text('حفظ الحركة')),
           ],
         )));
-      if (!mounted || result == null) return;
+      if (!mounted || result == null) { return; }
       await state.adjustStock(productId: product.id, change: result.$1 == 'add' ? result.$2 : -result.$2,
         reason: result.$1 == 'add' ? 'إضافة مخزون' : 'صرف مخزون', note: result.$3);
-      if (mounted) messenger.showSnackBar(const SnackBar(content: Text('تم تحديث كمية المخزون')));
+      if (mounted) { messenger.showSnackBar(const SnackBar(content: Text('تم تحديث كمية المخزون'))); }
     } catch (error) {
       if (mounted) {
         final message = error.toString().contains('سالبة') ? 'الكمية المطلوبة أكبر من الرصيد المتاح' : 'تعذر تحديث المخزون';
