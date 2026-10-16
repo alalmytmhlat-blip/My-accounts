@@ -45,9 +45,15 @@ class InvoiceRepository {
     required String invoiceDate,
     String? dueDate,
   }) async {
-    if (type != 'sale' && type != 'purchase') throw ArgumentError('نوع الفاتورة غير صالح');
-    if (lines.isEmpty) throw ArgumentError('أضف صنفًا واحدًا على الأقل');
-    if (paidMinor < 0) throw ArgumentError('المبلغ المدفوع لا يمكن أن يكون سالبًا');
+    if (type != 'sale' && type != 'purchase') {
+      throw ArgumentError('نوع الفاتورة غير صالح');
+    }
+    if (lines.isEmpty) {
+      throw ArgumentError('أضف صنفًا واحدًا على الأقل');
+    }
+    if (paidMinor < 0) {
+      throw ArgumentError('المبلغ المدفوع لا يمكن أن يكون سالبًا');
+    }
     final now = DateTime.now().toIso8601String();
     return database.db.transaction((txn) async {
       final partyRows = await txn.query('parties', columns: ['id', 'type', 'status'],
@@ -68,14 +74,18 @@ class InvoiceRepository {
         }
         final products = await txn.query('products',
           where: "id = ? AND status = 'active'", whereArgs: [line.productId], limit: 1);
-        if (products.isEmpty) throw StateError('أحد الأصناف غير موجود');
+        if (products.isEmpty) {
+          throw StateError('أحد الأصناف غير موجود');
+        }
         final product = products.first;
         final lineTotal = (line.quantity * line.unitPriceMinor).round();
         totalMinor += lineTotal;
         prepared.add((productId: line.productId, name: product['name'] as String,
           quantity: line.quantity, price: line.unitPriceMinor, lineTotal: lineTotal));
       }
-      if (paidMinor > totalMinor) throw ArgumentError('المدفوع لا يمكن أن يتجاوز إجمالي الفاتورة');
+      if (paidMinor > totalMinor) {
+        throw ArgumentError('المدفوع لا يمكن أن يتجاوز إجمالي الفاتورة');
+      }
       final number = 'INV-${DateTime.now().microsecondsSinceEpoch}';
       final status = paidMinor == 0 ? 'unpaid' : paidMinor == totalMinor ? 'paid' : 'partial';
       final invoiceId = await txn.insert('invoices', {
@@ -89,7 +99,9 @@ class InvoiceRepository {
         final current = (products.first['quantity'] as num).toDouble();
         final change = type == 'sale' ? -line.quantity : line.quantity;
         final next = current + change;
-        if (next < 0) throw StateError('الكمية المتاحة من "${line.name}" غير كافية');
+        if (next < 0) {
+          throw StateError('الكمية المتاحة من "${line.name}" غير كافية');
+        }
         await txn.insert('invoice_lines', {
           'invoice_id': invoiceId, 'product_id': line.productId, 'product_name': line.name,
           'quantity': line.quantity, 'unit_price_minor': line.price, 'line_total_minor': line.lineTotal,

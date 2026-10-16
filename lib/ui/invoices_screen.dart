@@ -80,14 +80,20 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     }
     final result = await showDialog<_InvoiceDraft>(context: context, builder: (context) =>
       _InvoiceDialog(type: type, parties: parties, products: products));
-    if (!mounted || result == null) return;
+    if (!mounted || result == null) {
+      return;
+    }
     try {
       await state.createInvoice(type: type, partyId: result.partyId, lines: result.lines,
         paidMinor: result.paidMinor, date: DateFormat('yyyy-MM-dd').format(result.date),
         dueDate: result.dueDate == null ? null : DateFormat('yyyy-MM-dd').format(result.dueDate!));
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حفظ الفاتورة وتحديث المخزون')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حفظ الفاتورة وتحديث المخزون')));
+      }
     } catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذر حفظ الفاتورة: $error')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذر حفظ الفاتورة: $error')));
+      }
     }
   }
 }
@@ -158,11 +164,11 @@ class _InvoiceDialogState extends State<_InvoiceDialog> {
     title: Text(widget.type == 'sale' ? 'إنشاء فاتورة بيع' : 'إنشاء فاتورة شراء'),
     content: SizedBox(width: 480, child: SingleChildScrollView(child: Column(
       mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        DropdownButtonFormField<int>(value: partyId, decoration: InputDecoration(labelText: widget.type == 'sale' ? 'العميل' : 'المورد'),
+        DropdownButtonFormField<int>(initialValue: partyId, decoration: InputDecoration(labelText: widget.type == 'sale' ? 'العميل' : 'المورد'),
           items: widget.parties.map((party) => DropdownMenuItem(value: party.id, child: Text(party.name, overflow: TextOverflow.ellipsis))).toList(),
           onChanged: (value) => setState(() => partyId = value)),
         const SizedBox(height: 10),
-        DropdownButtonFormField<int>(value: productId, decoration: const InputDecoration(labelText: 'الصنف'),
+        DropdownButtonFormField<int>(initialValue: productId, decoration: const InputDecoration(labelText: 'الصنف'),
           items: widget.products.map((product) => DropdownMenuItem(value: product.id, child: Text('${product.name} (متاح: ${product.quantity} ${product.unit})', overflow: TextOverflow.ellipsis))).toList(),
           onChanged: (value) => setState(() { productId = value; _setDefaultPrice(); })),
         const SizedBox(height: 8),
@@ -190,13 +196,17 @@ class _InvoiceDialogState extends State<_InvoiceDialog> {
         ListTile(contentPadding: EdgeInsets.zero, title: const Text('تاريخ الفاتورة'), subtitle: Text(DateFormat('yyyy-MM-dd').format(invoiceDate)),
           trailing: const Icon(Icons.calendar_month), onTap: () async {
             final picked = await showDatePicker(context: context, initialDate: invoiceDate, firstDate: DateTime(2000), lastDate: DateTime(2100));
-            if (picked != null) setState(() => invoiceDate = picked);
+            if (picked != null) {
+              setState(() => invoiceDate = picked);
+            }
           }),
         ListTile(contentPadding: EdgeInsets.zero, title: const Text('تاريخ الاستحقاق (اختياري)'),
           subtitle: Text(dueDate == null ? 'غير محدد' : DateFormat('yyyy-MM-dd').format(dueDate!)),
           trailing: const Icon(Icons.event_available), onTap: () async {
             final picked = await showDatePicker(context: context, initialDate: dueDate ?? invoiceDate, firstDate: DateTime(2000), lastDate: DateTime(2100));
-            if (picked != null) setState(() => dueDate = picked);
+            if (picked != null) {
+              setState(() => dueDate = picked);
+            }
           }),
       ],
     ))),
