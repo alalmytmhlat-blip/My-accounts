@@ -15,6 +15,10 @@ jobs:
         with:
           channel: stable
           cache: true
+      # The repository initially contains Dart sources only. Generate the native
+      # Android host project before resolving plugins and building the APK.
+      - name: Generate Android platform files
+        run: flutter create --platforms=android --org com.alalmytmhlat --project-name hisabati .
       - run: flutter pub get
       - run: dart format lib test
       - run: flutter analyze
