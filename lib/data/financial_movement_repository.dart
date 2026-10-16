@@ -43,9 +43,15 @@ class FinancialMovementRepository {
   }
 
   Future<void> addMovement({required int accountId, required String type, required int amountMinor, required String description, required String date}) async {
-    if (!const {'receipt', 'payment'}.contains(type)) throw ArgumentError('نوع الحركة غير صالح');
-    if (amountMinor <= 0) throw ArgumentError('يجب أن يكون المبلغ أكبر من صفر');
-    if (description.trim().isEmpty) throw ArgumentError('البيان مطلوب');
+    if (!const {'receipt', 'payment'}.contains(type)) {
+      throw ArgumentError('نوع الحركة غير صالح');
+    }
+    if (amountMinor <= 0) {
+      throw ArgumentError('يجب أن يكون المبلغ أكبر من صفر');
+    }
+    if (description.trim().isEmpty) {
+      throw ArgumentError('البيان مطلوب');
+    }
     await database.db.insert('financial_movements', {
       'account_id': accountId, 'movement_type': type, 'amount_minor': amountMinor,
       'description': description.trim(), 'movement_date': date, 'created_at': DateTime.now().toIso8601String(),
