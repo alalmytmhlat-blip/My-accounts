@@ -60,7 +60,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
               isThreeLine: true,
               trailing: PopupMenuButton<String>(
                 tooltip: 'إجراءات الفاتورة',
-                onSelected: (action) { if (action == 'payment') _recordPayment(invoice); },
+                onSelected: (action) { if (action == 'payment') {
+                    _recordPayment(invoice);
+                  } },
                 itemBuilder: (_) => [
                   PopupMenuItem(value: 'total', enabled: false, child: Text('الإجمالي: ${money(invoice.totalMinor)}')),
                   if (invoice.remainingMinor > 0) const PopupMenuItem(value: 'payment', child: Text('تسجيل دفعة')),
@@ -92,7 +94,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
         const SizedBox(height: 10),
         DropdownButtonFormField<int>(initialValue: accountId, decoration: const InputDecoration(labelText: 'حساب القبض/الصرف'),
           items: state.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))).toList(),
-          onChanged: (value) { if (value != null) setDialogState(() => accountId = value); }),
+          onChanged: (value) { if (value != null) {
+              setDialogState(() => accountId = value);
+            } }),
         const SizedBox(height: 10),
         TextField(controller: amount, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'مبلغ الدفعة')),
         const SizedBox(height: 10),
@@ -114,9 +118,13 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     try {
       await context.read<AppState>().addInvoicePayment(invoiceId: invoice.id, accountId: result.$1, amountMinor: result.$2,
         date: DateFormat('yyyy-MM-dd').format(DateTime.now()), note: result.$3);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تسجيل الدفعة وتحديث الفاتورة والحسابات')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تسجيل الدفعة وتحديث الفاتورة والحسابات')));
+      }
     } catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذر تسجيل الدفعة: $error')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذر تسجيل الدفعة: $error')));
+      }
     } finally { amount.dispose(); note.dispose(); }
   }
 

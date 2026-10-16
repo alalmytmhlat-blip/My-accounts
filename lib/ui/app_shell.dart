@@ -6,7 +6,6 @@ import 'parties_screen.dart';
 import 'more_screen.dart';
 import 'invoices_screen.dart';
 import 'reports_screen.dart';
-import 'simple_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
