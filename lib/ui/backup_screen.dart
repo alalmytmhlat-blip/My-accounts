@@ -71,7 +71,6 @@ class _BackupScreenState extends State<BackupScreen> {
       final stamp = DateTime.now().toIso8601String().replaceAll(':', '-');
       final file = File(p.join(directory, 'hisabati-backup-$stamp.json'));
       await file.writeAsString(const JsonEncoder.withIndent('  ').convert(payload));
-      await database.db.close();
       database = null;
       if (!mounted) return;
       setState(() => _lastBackup = file.path);
@@ -82,7 +81,6 @@ class _BackupScreenState extends State<BackupScreen> {
         ),
       );
     } catch (error) {
-      await database?.db.close();
       if (mounted) _message('تعذر إنشاء النسخة الاحتياطية: $error');
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -173,7 +171,6 @@ class _BackupScreenState extends State<BackupScreen> {
         }
       });
       await database.db.execute('PRAGMA foreign_keys = ON');
-      await database.db.close();
       database = null;
       final preferences = await SharedPreferences.getInstance();
       final settings = payload['settings'];
@@ -187,7 +184,9 @@ class _BackupScreenState extends State<BackupScreen> {
       await context.read<AppState>().refresh();
       _message('تمت استعادة البيانات. راجع الأرصدة والمخزون قبل متابعة العمل.');
     } catch (error) {
-      await database?.db.close();
+      if (database != null) {
+        try { await database.db.execute('PRAGMA foreign_keys = ON'); } catch (_) {}
+      }
       if (mounted) _message('تعذرت استعادة النسخة: $error');
     } finally {
       if (mounted) setState(() => _busy = false);
