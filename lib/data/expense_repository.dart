@@ -27,8 +27,8 @@ class ExpenseRepository {
 
   Future<void> addExpense({required String title, required int amountMinor,
     required String date, String category = ''}) async {
-    if (title.trim().isEmpty) throw ArgumentError('عنوان المصروف مطلوب');
-    if (amountMinor <= 0) throw ArgumentError('قيمة المصروف يجب أن تكون أكبر من صفر');
+    if (title.trim().isEmpty) { throw ArgumentError('عنوان المصروف مطلوب'); }
+    if (amountMinor <= 0) { throw ArgumentError('قيمة المصروف يجب أن تكون أكبر من صفر'); }
     await database.db.insert('expenses', {
       'title': title.trim(), 'amount_minor': amountMinor, 'expense_date': date,
       'category': category.trim(), 'created_at': DateTime.now().toIso8601String(),
