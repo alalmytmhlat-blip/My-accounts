@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../state/app_state.dart';
+import 'invoices_screen.dart';
+import 'financial_movements_screen.dart';
+import 'expenses_screen.dart';
+import 'parties_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -53,11 +57,15 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 22),
           const Text('إجراءات سريعة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
-          Wrap(spacing: 10, runSpacing: 10, children: const [
-            _QuickAction(icon: Icons.add_shopping_cart, label: 'فاتورة مبيعات'),
-            _QuickAction(icon: Icons.add_card, label: 'سند قبض'),
-            _QuickAction(icon: Icons.money_off_csred_outlined, label: 'إضافة مصروف'),
-            _QuickAction(icon: Icons.person_add_alt_1, label: 'إضافة عميل'),
+          Wrap(spacing: 10, runSpacing: 10, children: [
+            _QuickAction(icon: Icons.add_shopping_cart, label: 'فاتورة مبيعات',
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const InvoicesScreen()))),
+            _QuickAction(icon: Icons.add_card, label: 'سند قبض',
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FinancialMovementsScreen()))),
+            _QuickAction(icon: Icons.money_off_csred_outlined, label: 'إضافة مصروف',
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExpensesScreen()))),
+            _QuickAction(icon: Icons.person_add_alt_1, label: 'إضافة عميل',
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PartiesScreen()))),
           ]),
           const SizedBox(height: 22),
           const Text('نظرة عامة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -89,9 +97,10 @@ class _Metric extends StatelessWidget {
   ]))));
 }
 class _QuickAction extends StatelessWidget {
-  const _QuickAction({required this.icon, required this.label});
+  const _QuickAction({required this.icon, required this.label, required this.onPressed});
   final IconData icon;
   final String label;
+  final VoidCallback onPressed;
   @override
-  Widget build(BuildContext context) => ActionChip(avatar: Icon(icon, size: 18), label: Text(label), onPressed: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('ميزة "$label" ستُفعّل ضمن مرحلة الفواتير والمعاملات.'))));
+  Widget build(BuildContext context) => ActionChip(avatar: Icon(icon, size: 18), label: Text(label), onPressed: onPressed);
 }
