@@ -5,14 +5,21 @@ import '../data/party_repository.dart';
 import '../state/app_state.dart';
 
 class PartiesScreen extends StatefulWidget {
-  const PartiesScreen({super.key});
+  const PartiesScreen({super.key, this.initialType = 'customer'});
+  final String initialType;
 
   @override
   State<PartiesScreen> createState() => _PartiesScreenState();
 }
 
 class _PartiesScreenState extends State<PartiesScreen> {
-  String type = 'customer';
+  late String type = widget.initialType;
+
+  @override
+  void didUpdateWidget(covariant PartiesScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialType != widget.initialType) type = widget.initialType;
+  }
   String query = '';
 
   @override
