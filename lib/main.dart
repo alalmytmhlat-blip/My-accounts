@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'data/app_database.dart';
 import 'data/party_repository.dart';
+import 'data/inventory_repository.dart';
 import 'state/app_state.dart';
 import 'ui/app_shell.dart';
 
@@ -12,7 +13,7 @@ Future<void> main() async {
   await database.initialize();
   runApp(
     ChangeNotifierProvider(
-      create: (_) => AppState(PartyRepository(database)),
+      create: (_) => AppState(PartyRepository(database), InventoryRepository(database)),
       child: const HisabatiApp(),
     ),
   );
