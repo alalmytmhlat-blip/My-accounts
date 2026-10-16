@@ -5,6 +5,7 @@ import 'data/app_database.dart';
 import 'data/party_repository.dart';
 import 'data/inventory_repository.dart';
 import 'data/expense_repository.dart';
+import 'data/account_repository.dart';
 import 'state/app_state.dart';
 import 'ui/app_shell.dart';
 
@@ -14,7 +15,7 @@ Future<void> main() async {
   await database.initialize();
   runApp(
     ChangeNotifierProvider(
-      create: (_) => AppState(PartyRepository(database), InventoryRepository(database), ExpenseRepository(database)),
+      create: (_) => AppState(PartyRepository(database), InventoryRepository(database), ExpenseRepository(database), AccountRepository(database)),
       child: const HisabatiApp(),
     ),
   );
