@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'inventory_screen.dart';
+import 'expenses_screen.dart';
 import 'simple_screen.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -24,7 +25,9 @@ class MoreScreen extends StatelessWidget {
         onTap: () {
           final page = entry.$1 == 'المنتجات والمخزون'
             ? const InventoryScreen()
-            : SimpleScreen(title: entry.$1, icon: entry.$2,
+            : entry.$1 == 'المصروفات'
+                ? const ExpensesScreen()
+                : SimpleScreen(title: entry.$1, icon: entry.$2,
                 description: 'سيتم تنفيذ هذه الوحدة وربطها بقاعدة البيانات في المرحلة المخصصة لها.');
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
         },
