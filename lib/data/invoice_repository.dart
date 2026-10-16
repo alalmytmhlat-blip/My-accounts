@@ -44,14 +44,20 @@ class InvoiceRepository {
     final now = DateTime.now().toIso8601String();
     await database.db.transaction((txn) async {
       final rows = await txn.rawQuery('SELECT * FROM invoices WHERE id = ? LIMIT 1', [invoiceId]);
-      if (rows.isEmpty) throw StateError('الفاتورة غير موجودة');
+      if (rows.isEmpty) {
+        throw StateError('الفاتورة غير موجودة');
+      }
       final invoice = rows.first;
       final total = invoice['total_minor'] as int;
       final paid = invoice['paid_minor'] as int;
       final remaining = total - paid;
-      if (amountMinor > remaining) throw ArgumentError('مبلغ الدفعة أكبر من المبلغ المتبقي');
+      if (amountMinor > remaining) {
+        throw ArgumentError('مبلغ الدفعة أكبر من المبلغ المتبقي');
+      }
       final accounts = await txn.query('financial_accounts', where: 'id = ?', whereArgs: [accountId], limit: 1);
-      if (accounts.isEmpty) throw StateError('الحساب المالي غير موجود');
+      if (accounts.isEmpty) {
+        throw StateError('الحساب المالي غير موجود');
+      }
       final type = invoice['type'] as String;
       final nextPaid = paid + amountMinor;
       final status = nextPaid == total ? 'paid' : 'partial';

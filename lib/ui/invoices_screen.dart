@@ -291,13 +291,27 @@ class _InvoiceDialogState extends State<_InvoiceDialog> {
   }
 
   void _save() {
-    final paidAmount = double.tryParse(paid.text.trim());
-    if (partyId == null || cart.isEmpty || paidAmount == null || paidAmount < 0 || (paidAmount * 100).round() > totalMinor) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('اختر الجهة وأضف أصنافًا وتحقق من مبلغ المدفوع')));
+    if (partyId == null || cart.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('اختر الجهة وأضف صنفًا واحدًا على الأقل')),
+      );
       return;
     }
-    Navigator.pop(context, _InvoiceDraft(partyId: partyId!,
-      lines: cart.map((line) => InvoiceLineInput(productId: line.product.id, quantity: line.quantity, unitPriceMinor: line.priceMinor)).toList(),
-      paidMinor: (paidAmount * 100).round(), date: invoiceDate, dueDate: dueDate));
+    Navigator.pop(
+      context,
+      _InvoiceDraft(
+        partyId: partyId!,
+        lines: cart
+            .map((line) => InvoiceLineInput(
+                  productId: line.product.id,
+                  quantity: line.quantity,
+                  unitPriceMinor: line.priceMinor,
+                ))
+            .toList(),
+        paidMinor: 0,
+        date: invoiceDate,
+        dueDate: dueDate,
+      ),
+    );
   }
 }
