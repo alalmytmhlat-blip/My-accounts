@@ -61,6 +61,10 @@ class AppState extends ChangeNotifier {
   Future<void> addMovement({required int accountId, required String type, required int amountMinor, required String description, required String date}) async {
     await movementRepository.addMovement(accountId: accountId, type: type, amountMinor: amountMinor, description: description, date: date); await refresh();
   }
+  Future<void> addInvoicePayment({required int invoiceId, required int accountId, required int amountMinor, required String date, String note = ''}) async {
+    await invoiceRepository.addPayment(invoiceId: invoiceId, accountId: accountId, amountMinor: amountMinor, paymentDate: date, note: note);
+    await refresh();
+  }
   Future<void> createInvoice({required String type, required int partyId, required List<InvoiceLineInput> lines, required int paidMinor, required String date, String? dueDate}) async {
     await invoiceRepository.createInvoice(type: type, partyId: partyId, lines: lines, paidMinor: paidMinor, invoiceDate: date, dueDate: dueDate);
     await refresh();

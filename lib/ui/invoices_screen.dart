@@ -58,11 +58,66 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
               title: Text(invoice.number, style: const TextStyle(fontWeight: FontWeight.w600)),
               subtitle: Text('${invoice.partyName} • ${invoice.date}\n${_status(invoice.status)} • المتبقي: ${money(invoice.remainingMinor)}'),
               isThreeLine: true,
-              trailing: Text(money(invoice.totalMinor), style: const TextStyle(fontWeight: FontWeight.bold)),
+              trailing: PopupMenuButton<String>(
+                tooltip: 'إجراءات الفاتورة',
+                onSelected: (action) { if (action == 'payment') _recordPayment(invoice); },
+                itemBuilder: (_) => [
+                  PopupMenuItem(value: 'total', enabled: false, child: Text('الإجمالي: ${money(invoice.totalMinor)}')),
+                  if (invoice.remainingMinor > 0) const PopupMenuItem(value: 'payment', child: Text('تسجيل دفعة')),
+                ],
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text(money(invoice.totalMinor), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const Icon(Icons.more_vert, size: 18),
+                ]),
+              ),
             ))),
         ],
       )),
     );
+  }
+
+  Future<void> _recordPayment(InvoiceRecord invoice) async {
+    final state = context.read<AppState>();
+    if (state.accounts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('أضف حسابًا ماليًا أولًا لتسجيل الدفعة.')));
+      return;
+    }
+    final amount = TextEditingController();
+    final note = TextEditingController();
+    var accountId = state.accounts.first.id;
+    final result = await showDialog<(int, int, String)?>(context: context, builder: (dialogContext) => StatefulBuilder(builder: (context, setDialogState) => AlertDialog(
+      title: Text('تسجيل دفعة • ${invoice.number}'),
+      content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text('المبلغ المتبقي: ${money(invoice.remainingMinor)}'),
+        const SizedBox(height: 10),
+        DropdownButtonFormField<int>(initialValue: accountId, decoration: const InputDecoration(labelText: 'حساب القبض/الصرف'),
+          items: state.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))).toList(),
+          onChanged: (value) { if (value != null) setDialogState(() => accountId = value); }),
+        const SizedBox(height: 10),
+        TextField(controller: amount, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'مبلغ الدفعة')),
+        const SizedBox(height: 10),
+        TextField(controller: note, decoration: const InputDecoration(labelText: 'ملاحظة (اختياري)')),
+      ])),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('إلغاء')),
+        FilledButton(onPressed: () {
+          final parsed = double.tryParse(amount.text.trim());
+          if (parsed == null || parsed <= 0 || (parsed * 100).round() > invoice.remainingMinor) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تحقق من مبلغ الدفعة وألا يتجاوز المتبقي.')));
+            return;
+          }
+          Navigator.pop(dialogContext, (accountId, (parsed * 100).round(), note.text.trim()));
+        }, child: const Text('حفظ الدفعة')),
+      ],
+    )));
+    if (!mounted || result == null) { amount.dispose(); note.dispose(); return; }
+    try {
+      await context.read<AppState>().addInvoicePayment(invoiceId: invoice.id, accountId: result.$1, amountMinor: result.$2,
+        date: DateFormat('yyyy-MM-dd').format(DateTime.now()), note: result.$3);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تسجيل الدفعة وتحديث الفاتورة والحسابات')));
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذر تسجيل الدفعة: $error')));
+    } finally { amount.dispose(); note.dispose(); }
   }
 
   String _status(String status) => switch (status) {

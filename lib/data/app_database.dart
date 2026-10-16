@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
   static const _databaseName = 'hisabati.db';
-  static const _version = 4;
+  static const _version = 5;
   Database? _database;
 
   Future<void> initialize() async {
@@ -16,11 +16,13 @@ class AppDatabase {
         await _createInventoryTables(db);
         await _createFinancialMovementTable(db);
         await _createInvoiceLinesTable(db);
+        await _createAccountingTables(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) await _createInventoryTables(db);
         if (oldVersion < 3) await _createFinancialMovementTable(db);
         if (oldVersion < 4) await _createInvoiceLinesTable(db);
+        if (oldVersion < 5) await _createAccountingTables(db);
       },
     );
   }
@@ -93,6 +95,40 @@ class AppDatabase {
       FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE RESTRICT
     )''');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_invoice_lines_invoice ON invoice_lines(invoice_id)');
+  }
+
+  Future<void> _createAccountingTables(DatabaseExecutor db) async {
+    await db.execute('''CREATE TABLE IF NOT EXISTS invoice_payments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_id INTEGER NOT NULL,
+      account_id INTEGER NOT NULL,
+      amount_minor INTEGER NOT NULL CHECK(amount_minor > 0),
+      payment_date TEXT NOT NULL,
+      note TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      FOREIGN KEY(invoice_id) REFERENCES invoices(id) ON DELETE RESTRICT,
+      FOREIGN KEY(account_id) REFERENCES financial_accounts(id) ON DELETE RESTRICT
+    )''');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_invoice_payments_invoice ON invoice_payments(invoice_id)');
+    await db.execute('''CREATE TABLE IF NOT EXISTS journal_entries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entry_date TEXT NOT NULL,
+      description TEXT NOT NULL,
+      source_type TEXT NOT NULL,
+      source_id INTEGER,
+      created_at TEXT NOT NULL
+    )''');
+    await db.execute('''CREATE TABLE IF NOT EXISTS journal_lines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entry_id INTEGER NOT NULL,
+      account_code TEXT NOT NULL,
+      account_name TEXT NOT NULL,
+      debit_minor INTEGER NOT NULL DEFAULT 0 CHECK(debit_minor >= 0),
+      credit_minor INTEGER NOT NULL DEFAULT 0 CHECK(credit_minor >= 0),
+      CHECK((debit_minor > 0 AND credit_minor = 0) OR (credit_minor > 0 AND debit_minor = 0)),
+      FOREIGN KEY(entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE
+    )''');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_journal_lines_entry ON journal_lines(entry_id)');
   }
 
   Database get db {

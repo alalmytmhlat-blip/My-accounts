@@ -37,6 +37,36 @@ class InvoiceRepository {
     return rows.map(InvoiceRecord.fromMap).toList();
   }
 
+  Future<void> addPayment({required int invoiceId, required int accountId, required int amountMinor, required String paymentDate, String note = ''}) async {
+    if (amountMinor <= 0) {
+      throw ArgumentError('يجب أن يكون مبلغ الدفعة أكبر من صفر');
+    }
+    final now = DateTime.now().toIso8601String();
+    await database.db.transaction((txn) async {
+      final rows = await txn.rawQuery('SELECT * FROM invoices WHERE id = ? LIMIT 1', [invoiceId]);
+      if (rows.isEmpty) throw StateError('الفاتورة غير موجودة');
+      final invoice = rows.first;
+      final total = invoice['total_minor'] as int;
+      final paid = invoice['paid_minor'] as int;
+      final remaining = total - paid;
+      if (amountMinor > remaining) throw ArgumentError('مبلغ الدفعة أكبر من المبلغ المتبقي');
+      final accounts = await txn.query('financial_accounts', where: 'id = ?', whereArgs: [accountId], limit: 1);
+      if (accounts.isEmpty) throw StateError('الحساب المالي غير موجود');
+      final type = invoice['type'] as String;
+      final nextPaid = paid + amountMinor;
+      final status = nextPaid == total ? 'paid' : 'partial';
+      await txn.update('invoices', {'paid_minor': nextPaid, 'status': status}, where: 'id = ?', whereArgs: [invoiceId]);
+      await txn.insert('invoice_payments', {'invoice_id': invoiceId, 'account_id': accountId, 'amount_minor': amountMinor, 'payment_date': paymentDate, 'note': note.trim(), 'created_at': now});
+      final description = '${type == 'sale' ? 'قبض دفعة فاتورة' : 'صرف دفعة فاتورة'} ${invoice['invoice_number']}';
+      await txn.insert('financial_movements', {'account_id': accountId, 'movement_type': type == 'sale' ? 'receipt' : 'payment', 'amount_minor': amountMinor, 'description': description, 'movement_date': paymentDate, 'created_at': now});
+      final entryId = await txn.insert('journal_entries', {'entry_date': paymentDate, 'description': description, 'source_type': 'invoice_payment', 'source_id': invoiceId, 'created_at': now});
+      final accountName = accounts.first['name'] as String;
+      final isSale = type == 'sale';
+      await txn.insert('journal_lines', {'entry_id': entryId, 'account_code': 'CASH_BANK', 'account_name': accountName, 'debit_minor': isSale ? amountMinor : 0, 'credit_minor': isSale ? 0 : amountMinor});
+      await txn.insert('journal_lines', {'entry_id': entryId, 'account_code': isSale ? 'AR' : 'AP', 'account_name': isSale ? 'العملاء - ذمم مدينة' : 'الموردون - ذمم دائنة', 'debit_minor': isSale ? 0 : amountMinor, 'credit_minor': isSale ? amountMinor : 0});
+    });
+  }
+
   Future<int> createInvoice({
     required String type,
     required int partyId,
