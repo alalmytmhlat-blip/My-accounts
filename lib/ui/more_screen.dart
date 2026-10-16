@@ -5,6 +5,7 @@ import 'accounts_screen.dart';
 import 'financial_movements_screen.dart';
 import 'invoices_screen.dart';
 import 'simple_screen.dart';
+import 'settings_screen.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
@@ -29,6 +30,7 @@ class MoreScreen extends StatelessWidget {
           : entry.$1 == 'المصروفات' ? const ExpensesScreen()
           : entry.$1 == 'الحسابات والصندوق والبنوك' ? const AccountsScreen()
           : entry.$1 == 'سندات القبض والصرف' ? const FinancialMovementsScreen()
+          : entry.$1 == 'الإعدادات' ? const SettingsScreen()
           : SimpleScreen(title: entry.$1, icon: entry.$2, description: 'سيتم تنفيذ هذه الوحدة وربطها بقاعدة البيانات في المرحلة المخصصة لها.');
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
       },
