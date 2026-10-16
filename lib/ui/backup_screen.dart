@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../data/app_database.dart';
@@ -53,10 +54,17 @@ class _BackupScreenState extends State<BackupScreen> {
           tables[table] = await database.db.query(table);
         }
       }
+      final preferences = await SharedPreferences.getInstance();
+      final settings = <String, String>{};
+      for (final key in ['business_name', 'business_phone', 'business_address', 'business_tax_number', 'business_currency']) {
+        final value = preferences.getString(key);
+        if (value != null) settings[key] = value;
+      }
       final payload = <String, Object?>{
         'format': 'hisabati-backup',
         'formatVersion': 1,
         'createdAt': DateTime.now().toUtc().toIso8601String(),
+        'settings': settings,
         'tables': tables,
       };
       final directory = await getDatabasesPath();
@@ -167,6 +175,14 @@ class _BackupScreenState extends State<BackupScreen> {
       await database.db.execute('PRAGMA foreign_keys = ON');
       await database.db.close();
       database = null;
+      final preferences = await SharedPreferences.getInstance();
+      final settings = payload['settings'];
+      if (settings is Map<String, dynamic>) {
+        for (final key in ['business_name', 'business_phone', 'business_address', 'business_tax_number', 'business_currency']) {
+          final value = settings[key];
+          if (value is String) await preferences.setString(key, value);
+        }
+      }
       if (!mounted) return;
       await context.read<AppState>().refresh();
       _message('تمت استعادة البيانات. راجع الأرصدة والمخزون قبل متابعة العمل.');
