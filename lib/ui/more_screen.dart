@@ -6,6 +6,7 @@ import 'financial_movements_screen.dart';
 import 'invoices_screen.dart';
 import 'simple_screen.dart';
 import 'settings_screen.dart';
+import 'backup_screen.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
@@ -17,6 +18,7 @@ class MoreScreen extends StatelessWidget {
     ('المصروفات', Icons.money_off_outlined),
     ('الحسابات والصندوق والبنوك', Icons.account_balance_outlined),
     ('الضرائب والعملات', Icons.currency_exchange_outlined),
+    ('النسخ الاحتياطي والاستعادة', Icons.backup_outlined),
     ('الإعدادات', Icons.settings_outlined),
   ];
   @override
@@ -31,6 +33,7 @@ class MoreScreen extends StatelessWidget {
           : entry.$1 == 'الحسابات والصندوق والبنوك' ? const AccountsScreen()
           : entry.$1 == 'سندات القبض والصرف' ? const FinancialMovementsScreen()
           : entry.$1 == 'الإعدادات' ? const SettingsScreen()
+          : entry.$1 == 'النسخ الاحتياطي والاستعادة' ? const BackupScreen()
           : SimpleScreen(title: entry.$1, icon: entry.$2, description: 'سيتم تنفيذ هذه الوحدة وربطها بقاعدة البيانات في المرحلة المخصصة لها.');
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
       },
