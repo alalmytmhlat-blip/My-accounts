@@ -4,19 +4,22 @@ import '../data/expense_repository.dart';
 import '../data/party_repository.dart';
 import '../data/account_repository.dart';
 import '../data/financial_movement_repository.dart';
+import '../data/invoice_repository.dart';
 
 class AppState extends ChangeNotifier {
-  AppState(this.repository, this.inventoryRepository, this.expenseRepository, this.accountRepository, this.movementRepository);
+  AppState(this.repository, this.inventoryRepository, this.expenseRepository, this.accountRepository, this.movementRepository, this.invoiceRepository);
   final PartyRepository repository;
   final InventoryRepository inventoryRepository;
   final ExpenseRepository expenseRepository;
   final AccountRepository accountRepository;
   final FinancialMovementRepository movementRepository;
+  final InvoiceRepository invoiceRepository;
   DashboardSummary? summary;
   InventorySummary? inventorySummary;
   AccountSummary? accountSummary;
   FinancialMovementSummary? movementSummary;
   List<FinancialMovement> movements = [];
+  List<InvoiceRecord> invoices = [];
   List<FinancialAccount> accounts = [];
   List<Party> customers = [];
   List<Party> suppliers = [];
@@ -37,6 +40,7 @@ class AppState extends ChangeNotifier {
       accounts = await accountRepository.getAccounts();
       accountSummary = await accountRepository.getSummary();
       movements = await movementRepository.getMovements();
+      invoices = await invoiceRepository.getInvoices();
       movementSummary = await movementRepository.getSummary();
     } catch (_) { error = 'تعذر تحميل البيانات. حاول مرة أخرى.'; }
     finally { loading = false; notifyListeners(); }
@@ -56,6 +60,10 @@ class AppState extends ChangeNotifier {
   }
   Future<void> addMovement({required int accountId, required String type, required int amountMinor, required String description, required String date}) async {
     await movementRepository.addMovement(accountId: accountId, type: type, amountMinor: amountMinor, description: description, date: date); await refresh();
+  }
+  Future<void> createInvoice({required String type, required int partyId, required List<InvoiceLineInput> lines, required int paidMinor, required String date, String? dueDate}) async {
+    await invoiceRepository.createInvoice(type: type, partyId: partyId, lines: lines, paidMinor: paidMinor, invoiceDate: date, dueDate: dueDate);
+    await refresh();
   }
   Future<void> adjustStock({required int productId, required double change, required String reason, String note = ''}) async {
     await inventoryRepository.adjustStock(productId: productId, change: change, reason: reason, note: note); await refresh();

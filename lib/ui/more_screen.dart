@@ -3,11 +3,13 @@ import 'inventory_screen.dart';
 import 'expenses_screen.dart';
 import 'accounts_screen.dart';
 import 'financial_movements_screen.dart';
+import 'invoices_screen.dart';
 import 'simple_screen.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
   static const entries = <(String, IconData)>[
+    ('الفواتير', Icons.receipt_long_outlined),
     ('الموردون', Icons.local_shipping_outlined),
     ('المنتجات والمخزون', Icons.inventory_2_outlined),
     ('سندات القبض والصرف', Icons.receipt_outlined),
@@ -22,7 +24,8 @@ class MoreScreen extends StatelessWidget {
     body: ListView(padding: const EdgeInsets.all(12), children: entries.map((entry) => Card(child: ListTile(
       leading: Icon(entry.$2, color: Theme.of(context).colorScheme.primary), title: Text(entry.$1), trailing: const Icon(Icons.chevron_left),
       onTap: () {
-        final page = entry.$1 == 'المنتجات والمخزون' ? const InventoryScreen()
+        final page = entry.$1 == 'الفواتير' ? const InvoicesScreen()
+          : entry.$1 == 'المنتجات والمخزون' ? const InventoryScreen()
           : entry.$1 == 'المصروفات' ? const ExpensesScreen()
           : entry.$1 == 'الحسابات والصندوق والبنوك' ? const AccountsScreen()
           : entry.$1 == 'سندات القبض والصرف' ? const FinancialMovementsScreen()

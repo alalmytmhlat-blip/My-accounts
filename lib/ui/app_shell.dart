@@ -4,6 +4,7 @@ import '../state/app_state.dart';
 import 'dashboard_screen.dart';
 import 'parties_screen.dart';
 import 'more_screen.dart';
+import 'invoices_screen.dart';
 import 'simple_screen.dart';
 
 class AppShell extends StatefulWidget {
@@ -24,7 +25,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final pages = [
       const DashboardScreen(),
-      const SimpleScreen(title: 'الفواتير', icon: Icons.receipt_long_outlined, description: 'ستظهر هنا فواتير المبيعات والمشتريات.'),
+      const InvoicesScreen(),
       const PartiesScreen(),
       const SimpleScreen(title: 'التقارير', icon: Icons.bar_chart_rounded, description: 'التقارير المحاسبية قيد الإنشاء.'),
       const MoreScreen(),

@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
   static const _databaseName = 'hisabati.db';
-  static const _version = 3;
+  static const _version = 4;
   Database? _database;
 
   Future<void> initialize() async {
@@ -15,10 +15,12 @@ class AppDatabase {
         await _createCoreTables(db);
         await _createInventoryTables(db);
         await _createFinancialMovementTable(db);
+        await _createInvoiceLinesTable(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) await _createInventoryTables(db);
         if (oldVersion < 3) await _createFinancialMovementTable(db);
+        if (oldVersion < 4) await _createInvoiceLinesTable(db);
       },
     );
   }
@@ -76,6 +78,21 @@ class AppDatabase {
       created_at TEXT NOT NULL,
       FOREIGN KEY(account_id) REFERENCES financial_accounts(id) ON DELETE RESTRICT)''');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_financial_movements_account_date ON financial_movements(account_id, movement_date)');
+  }
+
+  Future<void> _createInvoiceLinesTable(DatabaseExecutor db) async {
+    await db.execute('''CREATE TABLE IF NOT EXISTS invoice_lines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_id INTEGER NOT NULL,
+      product_id INTEGER NOT NULL,
+      product_name TEXT NOT NULL,
+      quantity REAL NOT NULL CHECK(quantity > 0),
+      unit_price_minor INTEGER NOT NULL CHECK(unit_price_minor >= 0),
+      line_total_minor INTEGER NOT NULL CHECK(line_total_minor >= 0),
+      FOREIGN KEY(invoice_id) REFERENCES invoices(id) ON DELETE CASCADE,
+      FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE RESTRICT
+    )''');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_invoice_lines_invoice ON invoice_lines(invoice_id)');
   }
 
   Database get db {
