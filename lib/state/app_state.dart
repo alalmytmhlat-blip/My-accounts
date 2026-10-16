@@ -2,14 +2,18 @@ import 'package:flutter/foundation.dart';
 import '../data/inventory_repository.dart';
 import '../data/expense_repository.dart';
 import '../data/party_repository.dart';
+import '../data/account_repository.dart';
 
 class AppState extends ChangeNotifier {
-  AppState(this.repository, this.inventoryRepository, this.expenseRepository);
+  AppState(this.repository, this.inventoryRepository, this.expenseRepository, this.accountRepository);
   final PartyRepository repository;
   final InventoryRepository inventoryRepository;
   final ExpenseRepository expenseRepository;
+  final AccountRepository accountRepository;
   DashboardSummary? summary;
   InventorySummary? inventorySummary;
+  AccountSummary? accountSummary;
+  List<FinancialAccount> accounts = [];
   List<Party> customers = [];
   List<Party> suppliers = [];
   List<Product> products = [];
@@ -28,6 +32,8 @@ class AppState extends ChangeNotifier {
       products = await inventoryRepository.getProducts();
       inventorySummary = await inventoryRepository.getSummary();
       expenses = await expenseRepository.getExpenses();
+      accounts = await accountRepository.getAccounts();
+      accountSummary = await accountRepository.getSummary();
     } catch (_) {
       error = 'تعذر تحميل البيانات. حاول مرة أخرى.';
     } finally {
@@ -41,19 +47,18 @@ class AppState extends ChangeNotifier {
     await refresh();
   }
 
-  Future<void> addProduct({
-    required String name, String code = '', String category = '', String unit = 'قطعة',
-    required double quantity, required double minimumQuantity,
-    required int purchasePriceMinor, required int salePriceMinor,
-  }) async {
-    await inventoryRepository.addProduct(name: name, code: code, category: category, unit: unit,
-      quantity: quantity, minimumQuantity: minimumQuantity,
-      purchasePriceMinor: purchasePriceMinor, salePriceMinor: salePriceMinor);
+  Future<void> addProduct({required String name, String code = '', String category = '', String unit = 'قطعة', required double quantity, required double minimumQuantity, required int purchasePriceMinor, required int salePriceMinor}) async {
+    await inventoryRepository.addProduct(name: name, code: code, category: category, unit: unit, quantity: quantity, minimumQuantity: minimumQuantity, purchasePriceMinor: purchasePriceMinor, salePriceMinor: salePriceMinor);
     await refresh();
   }
 
   Future<void> addExpense({required String title, required int amountMinor, required String date, String category = ''}) async {
     await expenseRepository.addExpense(title: title, amountMinor: amountMinor, date: date, category: category);
+    await refresh();
+  }
+
+  Future<void> addAccount({required String name, required String type, required int openingBalanceMinor}) async {
+    await accountRepository.addAccount(name: name, type: type, openingBalanceMinor: openingBalanceMinor);
     await refresh();
   }
 
