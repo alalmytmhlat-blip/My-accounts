@@ -1,16 +1,19 @@
 import 'package:flutter/foundation.dart';
 import '../data/inventory_repository.dart';
+import '../data/expense_repository.dart';
 import '../data/party_repository.dart';
 
 class AppState extends ChangeNotifier {
-  AppState(this.repository, this.inventoryRepository);
+  AppState(this.repository, this.inventoryRepository, this.expenseRepository);
   final PartyRepository repository;
   final InventoryRepository inventoryRepository;
+  final ExpenseRepository expenseRepository;
   DashboardSummary? summary;
   InventorySummary? inventorySummary;
   List<Party> customers = [];
   List<Party> suppliers = [];
   List<Product> products = [];
+  List<Expense> expenses = [];
   bool loading = false;
   String? error;
 
@@ -24,6 +27,7 @@ class AppState extends ChangeNotifier {
       suppliers = await repository.getParties(type: 'supplier');
       products = await inventoryRepository.getProducts();
       inventorySummary = await inventoryRepository.getSummary();
+      expenses = await expenseRepository.getExpenses();
     } catch (_) {
       error = 'تعذر تحميل البيانات. حاول مرة أخرى.';
     } finally {
@@ -45,6 +49,11 @@ class AppState extends ChangeNotifier {
     await inventoryRepository.addProduct(name: name, code: code, category: category, unit: unit,
       quantity: quantity, minimumQuantity: minimumQuantity,
       purchasePriceMinor: purchasePriceMinor, salePriceMinor: salePriceMinor);
+    await refresh();
+  }
+
+  Future<void> addExpense({required String title, required int amountMinor, required String date, String category = ''}) async {
+    await expenseRepository.addExpense(title: title, amountMinor: amountMinor, date: date, category: category);
     await refresh();
   }
 
