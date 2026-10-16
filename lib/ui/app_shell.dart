@@ -5,6 +5,7 @@ import 'dashboard_screen.dart';
 import 'parties_screen.dart';
 import 'more_screen.dart';
 import 'invoices_screen.dart';
+import 'reports_screen.dart';
 import 'simple_screen.dart';
 
 class AppShell extends StatefulWidget {
@@ -27,7 +28,7 @@ class _AppShellState extends State<AppShell> {
       const DashboardScreen(),
       const InvoicesScreen(),
       const PartiesScreen(),
-      const SimpleScreen(title: 'التقارير', icon: Icons.bar_chart_rounded, description: 'التقارير المحاسبية قيد الإنشاء.'),
+      const ReportsScreen(),
       const MoreScreen(),
     ];
     return Scaffold(

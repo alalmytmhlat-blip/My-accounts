@@ -57,8 +57,8 @@ class PartyRepository {
     final db = _database.db;
     final salesRows = await db.rawQuery("SELECT COALESCE(SUM(total_minor),0) total FROM invoices WHERE type='sale' AND status != 'cancelled'");
     final expenseRows = await db.rawQuery('SELECT COALESCE(SUM(amount_minor),0) total FROM expenses');
-    final receivableRows = await db.rawQuery("SELECT COALESCE(SUM(opening_balance_minor),0) total FROM parties WHERE type='customer' AND status='active'");
-    final accountRows = await db.rawQuery('SELECT COALESCE(SUM(opening_balance_minor),0) total FROM financial_accounts');
+    final receivableRows = await db.rawQuery("SELECT COALESCE((SELECT SUM(opening_balance_minor) FROM parties WHERE type='customer' AND status='active'),0) + COALESCE((SELECT SUM(total_minor-paid_minor) FROM invoices WHERE type='sale' AND status!='cancelled'),0) AS total");
+    final accountRows = await db.rawQuery("SELECT COALESCE((SELECT SUM(opening_balance_minor) FROM financial_accounts),0) + COALESCE((SELECT SUM(CASE WHEN movement_type='receipt' THEN amount_minor ELSE -amount_minor END) FROM financial_movements),0) AS total");
     int value(List<Map<String, Object?>> rows) => (rows.first['total'] as int?) ?? 0;
     return DashboardSummary(sales: value(salesRows), expenses: value(expenseRows), receivables: value(receivableRows), cash: value(accountRows));
   }
